@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add polling unit result</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Add a new polling unit result</h1>
+      <p class="hint">
+        Enter the votes for every party. All fields are required except the unit
+        number.
+      </p>
+      <p id="msg" class="msg" hidden></p>
+      <form id="f" class="card">
+        <label
+          >Local government
+          <select id="lga" required>
+            <option value="">Loading…</option>
+          </select></label
+        >
+        <label
+          >Ward
+          <select id="ward" required disabled>
+            <option value="">Select a ward</option>
+          </select></label
+        >
+        <label
+          >Polling unit name
+          <input
+            id="pu_name"
+            required
+            minlength="2"
+            maxlength="50"
+            placeholder="e.g. Primary School, Ogbe Road"
+        /></label>
+        <label
+          >Polling unit number (optional)
+          <input
+            id="pu_number"
+            maxlength="50"
+            placeholder="Generated automatically if left blank"
+        /></label>
+        <label
+          >Entered by
+          <input id="entered_by" required minlength="2" maxlength="50"
+        /></label>
+        <h2>Votes per party</h2>
+        <div id="scores" class="grid"></div>
+        <button id="save" type="submit">Save results</button>
+      </form>
+      <div id="out" class="card" hidden></div>
+    </main>
+    <script src="/static/app.js"></script>
+    <script>
+      const f = $("#f"),
+        lga = $("#lga"),
+        ward = $("#ward"),
+        box = $("#scores"),
+        out = $("#out"),
+        btn = $("#save");
+      let parties = [];
+
+      lga.onchange = guard(async () => {
+        resetSelect(ward, "Select a ward");
+        if (lga.value)
+          fillSelect(
+            ward,
+            await api(`/api/lgas/${lga.value}/wards`),
+            "Select a ward",
+          );
+      });
+
+      const save = guard(async () => {
+        btn.disabled = true;
+        try {
+          const scores = {};
+          parties.forEach((p) => {
+            scores[p] = parseInt(f.elements[p].value, 10);
+          });
+          const d = await api("/api/polling-units", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lga_id: Number(lga.value),
+              ward_id: Number(ward.value),
+              name: $("#pu_name").value,
+              number: $("#pu_number").value || null,
+              entered_by: $("#entered_by").value,
+              scores,
+            }),
+          });
+          msg(
+            `Saved. "${d.name}" (${d.number}) now has results for all ${parties.length} parties.`,
+            "ok",
+          );
+          out.hidden = false;
+          out.innerHTML =
+            "<h2>Saved result</h2>" +
+            resultsTable(
+              parties.map((p) => ({ party: p, score: scores[p] })),
+              "party",
+              "score",
+            );
+          // keep LGA, ward and "entered by" so several units can be added quickly
+          $("#pu_name").value = "";
+          $("#pu_number").value = "";
+          parties.forEach((p) => {
+            f.elements[p].value = "";
+          });
+          $("#pu_name").focus();
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      f.addEventListener("submit", (e) => {
+        e.preventDefault();
+        save();
+      });
+
+      guard(async () => {
+        fillSelect(lga, await api("/api/lgas"), "Select a local government");
+        parties = await api("/api/parties");
+        box.innerHTML = parties
+          .map(
+            (p) =>
+              `<label>${esc(p)}<input type="number" name="${esc(p)}" min="0" step="1" inputmode="numeric" required></label>`,
+          )
+          .join("");
+      })();
+    </script>
+  </body>
+</html>

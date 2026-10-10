@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polling unit result</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Polling unit result</h1>
+      <p class="hint">
+        Pick a local government, then a ward, then a polling unit.
+      </p>
+      <p id="msg" class="msg" hidden></p>
+      <div class="card">
+        <label
+          >Local government
+          <select id="lga">
+            <option value="">Loading…</option>
+          </select></label
+        >
+        <label
+          >Ward
+          <select id="ward" disabled>
+            <option value="">Select a ward</option>
+          </select></label
+        >
+        <label
+          >Polling unit
+          <select id="pu" disabled>
+            <option value="">Select a polling unit</option>
+          </select></label
+        >
+      </div>
+      <div id="out" class="card" hidden></div>
+    </main>
+    <script src="/static/app.js"></script>
+    <script>
+      const lga = $("#lga"),
+        ward = $("#ward"),
+        pu = $("#pu"),
+        out = $("#out");
+      const puLabel = (i) => i.name + (i.number ? " (" + i.number + ")" : "");
+
+      lga.onchange = guard(async () => {
+        out.hidden = true;
+        resetSelect(ward, "Select a ward");
+        resetSelect(pu, "Select a polling unit");
+        if (lga.value)
+          fillSelect(
+            ward,
+            await api(`/api/lgas/${lga.value}/wards?with_units=true`),
+            "Select a ward",
+          );
+      });
+
+      ward.onchange = guard(async () => {
+        out.hidden = true;
+        resetSelect(pu, "Select a polling unit");
+        if (ward.value) {
+          fillSelect(
+            pu,
+            await api(
+              `/api/wards/${ward.value}/polling-units?lga_id=${lga.value}`,
+            ),
+            "Select a polling unit",
+            puLabel,
+          );
+        }
+      });
+
+      pu.onchange = guard(async () => {
+        out.hidden = !pu.value;
+        if (!pu.value) return;
+        const d = await api(`/api/polling-units/${pu.value}/results`);
+        out.innerHTML =
+          `<h2>${esc(d.unit.name)}</h2>` +
+          `<p class="meta">${esc(d.unit.number)} · ${esc(d.unit.ward)} · ${esc(d.unit.lga)}</p>` +
+          (d.results.length
+            ? resultsTable(d.results, "party", "score")
+            : "<p>No result has been recorded for this polling unit yet.</p>");
+      });
+
+      guard(async () =>
+        fillSelect(lga, await api("/api/lgas"), "Select a local government"),
+      )();
+    </script>
+  </body>
+</html>

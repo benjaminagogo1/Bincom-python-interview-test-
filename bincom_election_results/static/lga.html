@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LGA total</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Local government total</h1>
+      <p class="hint">
+        Sum of all polling unit results under a local government.
+      </p>
+      <p id="msg" class="msg" hidden></p>
+      <div class="card">
+        <label
+          >Local government
+          <select id="lga">
+            <option value="">Loading…</option>
+          </select></label
+        >
+      </div>
+      <div id="out" class="card" hidden></div>
+    </main>
+    <script src="/static/app.js"></script>
+    <script>
+      const lga = $("#lga"),
+        out = $("#out");
+
+      lga.onchange = guard(async () => {
+        out.hidden = !lga.value;
+        if (!lga.value) return;
+        const d = await api(`/api/lgas/${lga.value}/total`);
+        out.innerHTML =
+          `<h2>${esc(d.lga)}</h2>` +
+          `<p class="meta">Summed from ${d.polling_units} polling unit(s) with recorded results</p>` +
+          (d.results.length
+            ? resultsTable(d.results, "party", "total")
+            : "<p>No polling unit results have been recorded for this local government.</p>");
+      });
+
+      guard(async () =>
+        fillSelect(lga, await api("/api/lgas"), "Select a local government"),
+      )();
+    </script>
+  </body>
+</html>
