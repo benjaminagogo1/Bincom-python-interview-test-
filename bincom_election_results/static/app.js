@@ -27,7 +27,6 @@ function msg(text, type) {
   m.hidden = !text;
 }
 
-// Wrap an async handler so errors show in the message box instead of failing silently.
 const guard =
   (fn) =>
   async (...args) => {

@@ -63,18 +63,18 @@ question 6 prints an error message instead of crashing.
 
 The page contains 95 colour entries (5 days x 19) and 12 distinct colours.
 
-| # | Question | Answer |
-|---|----------|--------|
-| 1 | Mean colour | ORANGE (mean frequency is 7.92) |
-| 2 | Most worn colour | BLUE (30 times) |
-| 3 | Median colour | BROWN (median frequency is 5.5) |
-| 4 | Variance of the colour frequencies | 63.2431 |
-| 5 | Probability that a random colour is red | 9/95 = 0.0947 |
-| 6 | Saved to PostgreSQL | Table `colour_frequency` (12 rows) |
-| 7 | Recursive search | Searches a list for a number entered by the user |
-| 8 | Random 4-digit binary number to base 10 | Prints the binary number and its decimal value |
-| 9 | Sum of the first 50 Fibonacci numbers | 20365011073 |
-| Extra | Binary sequence from the page | Output matches the expected output on the page |
+| #     | Question                                | Answer                                           |
+| ----- | --------------------------------------- | ------------------------------------------------ |
+| 1     | Mean colour                             | ORANGE (mean frequency is 7.92)                  |
+| 2     | Most worn colour                        | BLUE (30 times)                                  |
+| 3     | Median colour                           | BROWN (median frequency is 5.5)                  |
+| 4     | Variance of the colour frequencies      | 63.2431                                          |
+| 5     | Probability that a random colour is red | 9/95 = 0.0947                                    |
+| 6     | Saved to PostgreSQL                     | Table `colour_frequency` (12 rows)               |
+| 7     | Recursive search                        | Searches a list for a number entered by the user |
+| 8     | Random 4-digit binary number to base 10 | Prints the binary number and its decimal value   |
+| 9     | Sum of the first 50 Fibonacci numbers   | 20365011073                                      |
+| Extra | Binary sequence from the page           | Output matches the expected output on the page   |
 
 ## Interpretations and assumptions
 
@@ -83,26 +83,20 @@ The page contains 95 colour entries (5 days x 19) and 12 distinct colours.
   tied at 9 times each, and the script returns ORANGE because it appears first
   in the data.
 
-
 - **Median colour.** Colours are sorted by frequency (ties broken
   alphabetically) and the middle one is taken. There are 12 colours, so there
   are two middle positions, and the script takes the upper one (BROWN). The
   median frequency, 5.5, is the average of the two middle frequencies.
 
-
 - **Variance.** This is the population variance of the 12 colour frequencies
   (`statistics.pvariance`). The sample variance (`statistics.variance`) would
   give a slightly larger value.
 
-
 - **Probability of red.** The number of times red was worn divided by the total
   number of entries (9/95).
 
-
 - **Fibonacci.** The sequence starts at 0 (0, 1, 1, 2, 3, ...), and the first
   50 terms are summed. If the sequence starts at 1, the sum is different.
-
-
 
 - **Binary sequence (extra, from the bottom of the page).** The page shows an
   input sequence and an expected output. The rule I inferred is: output `1` at
@@ -112,7 +106,6 @@ The page contains 95 colour entries (5 days x 19) and 12 distinct colours.
   input matches the expected output on the page. The sample has no runs longer
   than three, so for a longer run only its third 1 produces an output of 1.
 
-  
 - **Data quality.** Tuesday contains the entries `ARSH` and `BLEW`, which look
   like typos (for example for ASH and BLUE). They are currently counted as
   separate colours exactly as written in the source. Correcting them would
